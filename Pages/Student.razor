@@ -44,6 +44,14 @@
                     </select>
                 </div>
 
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex items-start gap-3">
+                    <input type="checkbox" id="priorityCheck" class="mt-1 h-4 w-4 text-cit-maroon rounded focus:ring-cit-gold cursor-pointer" @bind="formModel.IsPriority" />
+                    <label for="priorityCheck" class="text-xs text-gray-700 select-none cursor-pointer">
+                        <strong class="text-amber-900 block">⚡ Request Priority Lane</strong>
+                        For PWD, Senior Citizens, Pregnant Students, or Express Clearance.
+                    </label>
+                </div>
+
                 <button type="submit" class="w-full bg-cit-gold hover:bg-cit-gold-hover text-white py-3.5 rounded-xl font-bold text-base shadow-lg transition-all duration-150 transform hover:-translate-y-0.5 mt-2">
                     Generate Ticket ➔
                 </button>
@@ -51,7 +59,6 @@
         }
         else
         {
-            <!-- Ticket Receipt -->
             <div class="border-2 border-dashed border-cit-gold/70 rounded-2xl p-6 sm:p-8 bg-amber-50/40 text-center relative overflow-hidden">
                 <div class="text-[0.65rem] font-bold text-cit-maroon uppercase tracking-wider mb-1">
                     Cebu Institute of Technology - University
@@ -80,16 +87,14 @@
                         <strong class="text-gray-900">@generatedTicket.Service</strong>
                     </div>
                     <div class="flex justify-between py-2">
-                        <span class="text-gray-500">Issued At:</span>
-                        <strong class="text-gray-900">@generatedTicket.CreatedAt.ToString("h:mm tt")</strong>
+                        <span class="text-gray-500">Lane Type:</span>
+                        <strong class="@(generatedTicket.IsPriority ? "text-amber-600 font-black" : "text-gray-900")">
+                            @(generatedTicket.IsPriority ? "⚡ Priority Lane" : "Regular Lane")
+                        </strong>
                     </div>
                 </div>
 
-                <div class="bg-emerald-50 text-emerald-800 border border-emerald-200 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-medium mb-6">
-                    👥 <strong>@(QueueService.Tickets.Count(t => t.Department == generatedTicket.Department && t.Status == TicketStatus.Waiting) - 1)</strong> students ahead of you
-                </div>
-
-                <button class="w-full bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 py-2.5 rounded-xl text-sm font-semibold transition" @onclick="() => generatedTicket = null">
+                <button class="w-full bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 py-2.5 rounded-xl text-xs font-semibold transition" @onclick="() => generatedTicket = null">
                     + Issue Another Ticket
                 </button>
             </div>
@@ -126,9 +131,9 @@
     {
         AvailableServices = formModel.Department switch
         {
-            "Registrar Office" => new List<string> { "Clearance Signing", "Transcript of Records", "Enrollment Validation", "Diploma Request", "Certificates (COE/COG)" },
-            "Finance and Accounting Office" => new List<string> { "Tuition Payment", "Promissory Note", "Refund Request", "Exam Permit Clearance" },
-            _ => new List<string> { "Change of Subject", "Adding/Dropping", "Overload Form Approval", "Curriculum Inquiries" }
+            "Registrar Office" => new List<string> { "Clearance Signing", "Transcript of Records", "Enrollment Validation", "Diploma Request" },
+            "Finance and Accounting Office" => new List<string> { "Tuition Payment", "Promissory Note", "Refund Request", "Exam Permit" },
+            _ => new List<string> { "Change of Subject", "Adding/Dropping", "Overload Form Approval" }
         };
         formModel.Service = AvailableServices.FirstOrDefault() ?? "";
     }
@@ -139,7 +144,8 @@
             formModel.Department,
             formModel.Service,
             formModel.Name,
-            formModel.StudentId
+            formModel.StudentId,
+            formModel.IsPriority
         );
     }
 
@@ -149,5 +155,6 @@
         public string StudentId { get; set; } = "";
         public string Department { get; set; } = "";
         public string Service { get; set; } = "";
+        public bool IsPriority { get; set; } = false;
     }
 }

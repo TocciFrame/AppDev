@@ -16,6 +16,7 @@ public class QueueTicket
     public string StudentName { get; set; } = string.Empty;
     public string StudentId { get; set; } = string.Empty;
     public string Teller { get; set; } = string.Empty;
+    public bool IsPriority { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public TicketStatus Status { get; set; } = TicketStatus.Waiting;
 }
