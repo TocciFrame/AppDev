@@ -2,105 +2,109 @@
 @inject QueueService QueueService
 @implements IDisposable
 
-<div class="container page-body">
-    <div class="page-heading-row">
-        <div class="page-heading">
-            <div class="heading-icon">🎧</div>
+<div class="max-w-7xl mx-auto my-8 px-4 sm:px-6">
+    <!-- Header Controls -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div class="flex items-center gap-3">
+            <span class="text-3xl">🎧</span>
             <div>
-                <h2>Staff Queue Management</h2>
-                <p class="text-muted">Manage and serve student tickets in real-time.</p>
+                <h2 class="text-2xl font-black text-gray-900 tracking-tight">Staff Queue Management</h2>
+                <p class="text-sm text-gray-500">Manage and serve student tickets in real-time.</p>
             </div>
         </div>
 
-        <div class="staff-controls-top">
-            <label class="dept-filter-label">Filter Department:</label>
-            <select class="form-control filter-select" @bind="selectedDept">
+        <div class="flex items-center gap-3 flex-wrap">
+            <label class="text-xs font-bold uppercase text-gray-500">Filter Department:</label>
+            <select class="px-3 py-1.5 text-sm rounded-lg border border-gray-300 bg-white font-medium focus:ring-2 focus:ring-cit-gold outline-none" @bind="selectedDept">
                 <option value="All">All Departments</option>
                 <option value="Registrar Office">Registrar Office</option>
                 <option value="Finance and Accounting Office">Finance Office</option>
                 <option value="Enrollment Technical Office">Enrollment Technical Office</option>
             </select>
-            <button class="btn btn-outline btn-sm" @onclick="QueueService.SeedInitialData">
+            <button class="px-3 py-1.5 text-xs font-bold rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition" @onclick="QueueService.SeedInitialData">
                 ↻ Reset Demo Data
             </button>
         </div>
     </div>
 
-    <!-- Stat Metrics Row -->
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-info">
-                <div class="metric-label">Waiting</div>
-                <div class="metric-value">@WaitingCount</div>
+    <!-- Metrics Row -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Waiting</span>
+                <span class="text-3xl font-black text-gray-900 mt-1">@WaitingCount</span>
             </div>
-            <div class="metric-icon icon-orange">👥</div>
+            <span class="text-3xl text-orange-500 bg-orange-50 p-2.5 rounded-xl">👥</span>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-info">
-                <div class="metric-label">Now Serving</div>
-                <div class="metric-value">@ServingCount</div>
+        <div class="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Now Serving</span>
+                <span class="text-3xl font-black text-gray-900 mt-1">@ServingCount</span>
             </div>
-            <div class="metric-icon icon-gold">🔔</div>
+            <span class="text-3xl text-amber-500 bg-amber-50 p-2.5 rounded-xl">🔔</span>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-info">
-                <div class="metric-label">Completed</div>
-                <div class="metric-value">@CompletedCount</div>
+        <div class="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Completed</span>
+                <span class="text-3xl font-black text-gray-900 mt-1">@CompletedCount</span>
             </div>
-            <div class="metric-icon icon-green">✔</div>
+            <span class="text-3xl text-emerald-500 bg-emerald-50 p-2.5 rounded-xl">✔</span>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-info">
-                <div class="metric-label">Skipped</div>
-                <div class="metric-value">@SkippedCount</div>
+        <div class="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Skipped</span>
+                <span class="text-3xl font-black text-gray-900 mt-1">@SkippedCount</span>
             </div>
-            <div class="metric-icon icon-blue">⏭</div>
+            <span class="text-3xl text-blue-500 bg-blue-50 p-2.5 rounded-xl">⏭</span>
         </div>
     </div>
 
-    <div class="staff-workspace-grid">
-        <!-- Now Serving Card -->
-        <div class="workspace-col">
-            <h4 class="section-title">CURRENTLY SERVING</h4>
+    <!-- Workspace (2 Columns) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Currently Serving -->
+        <div class="lg:col-span-6">
+            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">CURRENTLY SERVING</h4>
 
             @if (CurrentServing != null)
             {
-                <div class="serving-card">
-                    <div class="serving-header">
+                <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                    <div class="flex justify-between items-start mb-6">
                         <div>
-                            <h3 class="ticket-code">@CurrentServing.TicketNumber</h3>
-                            <div class="dept-text">@CurrentServing.Department</div>
+                            <h3 class="text-4xl font-black text-cit-maroon tracking-tight">@CurrentServing.TicketNumber</h3>
+                            <span class="text-xs font-medium text-gray-500">@CurrentServing.Department</span>
                         </div>
-                        <span class="badge-pill green-pill pulse">Active Session</span>
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                            Active Session
+                        </span>
                     </div>
 
-                    <div class="details-grid">
-                        <div class="detail-row">
-                            <span class="label">Student Name</span>
-                            <span class="val">@CurrentServing.StudentName</span>
+                    <div class="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl text-sm mb-6">
+                        <div>
+                            <span class="block text-xs text-gray-400">Student Name</span>
+                            <strong class="text-gray-900">@CurrentServing.StudentName</strong>
                         </div>
-                        <div class="detail-row">
-                            <span class="label">Student ID</span>
-                            <span class="val">@CurrentServing.StudentId</span>
+                        <div>
+                            <span class="block text-xs text-gray-400">Student ID</span>
+                            <strong class="text-gray-900">@CurrentServing.StudentId</strong>
                         </div>
-                        <div class="detail-row">
-                            <span class="label">Service</span>
-                            <span class="val">@CurrentServing.Service</span>
+                        <div>
+                            <span class="block text-xs text-gray-400">Service</span>
+                            <strong class="text-gray-900">@CurrentServing.Service</strong>
                         </div>
-                        <div class="detail-row">
-                            <span class="label">Counter / Teller</span>
-                            <span class="val">@(string.IsNullOrEmpty(CurrentServing.Teller) ? "Counter 1" : CurrentServing.Teller)</span>
+                        <div>
+                            <span class="block text-xs text-gray-400">Counter / Teller</span>
+                            <strong class="text-gray-900">@(string.IsNullOrEmpty(CurrentServing.Teller) ? "Counter 1" : CurrentServing.Teller)</strong>
                         </div>
                     </div>
 
-                    <div class="action-buttons-group">
-                        <button class="btn btn-complete" @onclick="() => QueueService.CompleteServingTicket(CurrentServing.TicketNumber)">
+                    <div class="flex gap-3">
+                        <button class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow transition" @onclick="() => QueueService.CompleteServingTicket(CurrentServing.TicketNumber)">
                             ✔ Mark Complete
                         </button>
-                        <button class="btn btn-skip" @onclick="() => QueueService.SkipTicket(CurrentServing.TicketNumber)">
+                        <button class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-5 py-3 rounded-xl transition" @onclick="() => QueueService.SkipTicket(CurrentServing.TicketNumber)">
                             ⏭ Skip
                         </button>
                     </div>
@@ -108,54 +112,52 @@
             }
             else
             {
-                <div class="serving-card empty-serving">
-                    <div class="empty-icon">☕</div>
-                    <h4>No Student Currently at Counter</h4>
-                    <p class="text-muted">Select a department above or call the next student in queue.</p>
+                <div class="bg-white border border-gray-200 rounded-2xl p-10 text-center shadow-sm">
+                    <div class="text-4xl mb-2">☕</div>
+                    <h4 class="text-base font-bold text-gray-800">No Student At Counter</h4>
+                    <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 mb-4">Select a student from the waiting list or call next ticket in line.</p>
                     @if (WaitingCount > 0)
                     {
                         var targetDept = selectedDept == "All" ? "Registrar Office" : selectedDept;
-                        <button class="btn btn-primary" @onclick='() => QueueService.CallNext(targetDept, "Window 1")'>
-                            📢 Call Next Student (@targetDept)
+                        <button class="bg-cit-gold hover:bg-cit-gold-hover text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow transition" @onclick='() => QueueService.CallNext(targetDept, "Window 1")'>
+                            📢 Call Next (@targetDept)
                         </button>
                     }
                 </div>
             }
         </div>
 
-        <!-- Live Waiting Line -->
-        <div class="workspace-col">
-            <h4 class="section-title">
-                UPCOMING IN LINE 
-                <span class="badge-count">@FilteredWaitingTickets.Count</span>
+        <!-- Waiting Line -->
+        <div class="lg:col-span-6">
+            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+                <span>UPCOMING IN LINE</span>
+                <span class="bg-gray-200 text-gray-700 text-[0.7rem] px-2 py-0.5 rounded-full font-bold">@FilteredWaitingTickets.Count</span>
             </h4>
 
-            <div class="waiting-line-list">
+            <div class="space-y-3">
                 @if (FilteredWaitingTickets.Any())
                 {
                     @foreach (var ticket in FilteredWaitingTickets)
                     {
-                        <div class="waiting-item-card">
-                            <div class="ticket-col">
-                                <span class="badge-ticket">@ticket.TicketNumber</span>
-                                <span class="ticket-time">@ticket.CreatedAt.ToString("h:mm tt")</span>
+                        <div class="bg-white border border-gray-200/80 rounded-xl p-4 shadow-sm flex items-center justify-between gap-4">
+                            <div class="min-w-[90px]">
+                                <span class="font-extrabold text-base text-cit-maroon block leading-tight">@ticket.TicketNumber</span>
+                                <span class="text-xs text-gray-400">@ticket.CreatedAt.ToString("h:mm tt")</span>
                             </div>
-                            <div class="student-col">
-                                <strong>@ticket.StudentName</strong>
-                                <span class="sub-service">@ticket.Service • @ticket.Department</span>
+                            <div class="flex-1 min-w-0">
+                                <strong class="block text-sm text-gray-800 truncate">@ticket.StudentName</strong>
+                                <span class="block text-xs text-gray-500 truncate">@ticket.Service • @ticket.Department</span>
                             </div>
-                            <div class="action-col">
-                                <button class="btn btn-sm btn-outline" @onclick='() => QueueService.CallNext(ticket.Department, "Counter 1")'>
-                                    Call Now
-                                </button>
-                            </div>
+                            <button class="px-3.5 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-bold transition whitespace-nowrap" @onclick='() => QueueService.CallNext(ticket.Department, "Counter 1")'>
+                                Call Now
+                            </button>
                         </div>
                     }
                 }
                 else
                 {
-                    <div class="empty-waiting">
-                        No students waiting in this category. Students can join at the <strong>/student</strong> screen.
+                    <div class="bg-white border border-dashed border-gray-300 rounded-xl p-8 text-center text-xs text-gray-400">
+                        No students currently waiting. New tickets generated at <span class="font-bold text-gray-600">/student</span> will appear here instantly.
                     </div>
                 }
             </div>

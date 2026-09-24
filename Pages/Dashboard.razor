@@ -2,81 +2,94 @@
 @inject QueueService QueueService
 @implements IDisposable
 
-<div class="container page-body">
-    <div class="page-heading">
-        <div class="heading-icon">📺</div>
+<div class="max-w-7xl mx-auto my-8 px-4 sm:px-6">
+    <div class="flex items-center gap-3 mb-8">
+        <span class="text-3xl">📺</span>
         <div>
-            <h2>Live Queue Display</h2>
-            <p class="text-muted">Real-time queue status for all university offices.</p>
+            <h2 class="text-2xl font-black text-gray-900 tracking-tight">Live Queue Display</h2>
+            <p class="text-sm text-gray-500">Real-time queue status for all university offices.</p>
         </div>
     </div>
 
-    <!-- Department Queue Boards -->
-    <div class="dept-grid">
+    <!-- 3-Column Office Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         @foreach (var dept in Departments)
         {
             var nowServing = QueueService.Tickets.FirstOrDefault(t => t.Department == dept && t.Status == TicketStatus.NowServing);
             var waitingList = QueueService.Tickets.Where(t => t.Department == dept && t.Status == TicketStatus.Waiting).ToList();
 
-            <div class="dept-card">
-                <div class="dept-banner">
-                    <div class="banner-title">
-                        <span class="dept-icon">🏛️</span> @dept
-                    </div>
-                    <span class="waiting-badge">@waitingList.Count waiting</span>
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                <!-- Header -->
+                <div class="bg-cit-maroon text-white px-5 py-4 flex justify-between items-center">
+                    <span class="font-bold text-sm tracking-wide flex items-center gap-2">
+                        🏛️ @dept
+                    </span>
+                    <span class="text-xs bg-black/25 px-2.5 py-1 rounded-md font-medium">
+                        @waitingList.Count waiting
+                    </span>
                 </div>
 
-                <div class="dept-serving-section">
-                    <div class="micro-label">NOW SERVING</div>
-                    <div class="serving-box">
-                        <span class="serving-number">@(nowServing?.TicketNumber ?? "---")</span>
+                <!-- Now Serving Section -->
+                <div class="p-5 border-b border-gray-100 bg-amber-50/20">
+                    <span class="text-[0.65rem] font-black uppercase tracking-wider text-gray-400 block mb-1">NOW SERVING</span>
+                    <div class="flex justify-between items-center">
+                        <span class="text-3xl font-black text-emerald-600">
+                            @(nowServing?.TicketNumber ?? "---")
+                        </span>
                         @if (nowServing != null)
                         {
-                            <span class="window-pill">@(string.IsNullOrEmpty(nowServing.Teller) ? "Counter" : nowServing.Teller)</span>
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 bg-white">
+                                @(string.IsNullOrEmpty(nowServing.Teller) ? "Counter" : nowServing.Teller)
+                            </span>
                         }
                     </div>
                     @if (nowServing != null)
                     {
-                        <div class="serving-student-sub">@nowServing.StudentName • @nowServing.Service</div>
+                        <div class="text-xs text-gray-500 mt-1 truncate">@nowServing.StudentName • @nowServing.Service</div>
                     }
                 </div>
 
-                <div class="dept-upnext-section">
-                    <div class="micro-label">UP NEXT</div>
-                    @if (waitingList.Any())
-                    {
-                        @for (int i = 0; i < Math.Min(3, waitingList.Count); i++)
+                <!-- Up Next List -->
+                <div class="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                        <span class="text-[0.65rem] font-black uppercase tracking-wider text-gray-400 block mb-2">UP NEXT</span>
+                        @if (waitingList.Any())
                         {
-                            var item = waitingList[i];
-                            <div class="upnext-row">
-                                <span class="index">@(i + 1)</span>
-                                <span class="ticket">@item.TicketNumber</span>
-                                <span class="service text-truncate">@item.Service</span>
+                            <div class="space-y-2">
+                                @for (int i = 0; i < Math.Min(3, waitingList.Count); i++)
+                                {
+                                    var item = waitingList[i];
+                                    <div class="flex items-center text-xs text-gray-700 py-1 border-b border-gray-50 last:border-0">
+                                        <span class="w-5 text-gray-400 font-bold">@(i + 1)</span>
+                                        <span class="font-bold text-gray-900 w-24">@item.TicketNumber</span>
+                                        <span class="flex-1 text-right text-gray-500 truncate">@item.Service</span>
+                                    </div>
+                                }
                             </div>
                         }
-                    }
-                    else
-                    {
-                        <div class="no-next">No tickets in line</div>
-                    }
+                        else
+                        {
+                            <span class="text-xs text-gray-400 italic block py-4 text-center">No tickets in line</span>
+                        }
+                    </div>
                 </div>
             </div>
         }
     </div>
 
     <!-- Recent History -->
-    <div class="history-section">
-        <h4 class="section-title">RECENT ACTIVITY</h4>
-        <div class="history-table">
+    <div>
+        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">RECENT ACTIVITY</h4>
+        <div class="bg-white rounded-2xl border border-gray-200 divide-y divide-gray-100 shadow-sm overflow-hidden">
             @if (QueueService.History.Any())
             {
                 @foreach (var hist in QueueService.History.Take(4))
                 {
-                    <div class="history-row">
-                        <span class="hist-ticket">@hist.TicketNumber</span>
-                        <span>@hist.StudentName</span>
-                        <span class="hist-service">@hist.Department — @hist.Service</span>
-                        <span class="badge-pill @(hist.Status == TicketStatus.Completed ? "green-pill" : "blue-pill")">
+                    <div class="px-5 py-3.5 flex items-center justify-between text-xs sm:text-sm">
+                        <span class="font-extrabold text-cit-maroon w-24">@hist.TicketNumber</span>
+                        <span class="font-medium text-gray-800 flex-1 truncate px-3">@hist.StudentName</span>
+                        <span class="text-gray-500 hidden sm:inline flex-1 truncate">@hist.Department — @hist.Service</span>
+                        <span class="text-[0.7rem] font-bold uppercase px-2.5 py-1 rounded-full @(hist.Status == TicketStatus.Completed ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-blue-50 text-blue-700 border border-blue-200")">
                             @hist.Status
                         </span>
                     </div>
@@ -84,7 +97,7 @@
             }
             else
             {
-                <div class="p-3 text-muted text-center">No completed transactions yet today.</div>
+                <div class="p-6 text-center text-xs text-gray-400">No completed transactions recorded yet.</div>
             }
         </div>
     </div>

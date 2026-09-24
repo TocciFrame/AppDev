@@ -1,30 +1,32 @@
 @page "/student"
 @inject QueueService QueueService
 
-<div class="kiosk-container">
-    <div class="kiosk-card">
+<div class="max-w-xl mx-auto my-8 sm:my-12 px-4">
+    <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-xl border border-gray-100">
         @if (generatedTicket == null)
         {
-            <div class="kiosk-header">
-                <span class="kiosk-badge">CIT-U STUDENT KIOSK</span>
-                <h2>Get Your Queue Ticket</h2>
-                <p>Select your office and service to reserve your spot.</p>
+            <div class="text-center mb-6">
+                <span class="inline-block bg-amber-100 text-amber-900 font-bold text-xs uppercase tracking-wider px-3 py-1 rounded-full mb-2">
+                    CIT-U Student Kiosk
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900">Get Your Queue Ticket</h2>
+                <p class="text-sm text-gray-500 mt-1">Select your office and transaction to reserve your spot.</p>
             </div>
 
-            <EditForm Model="formModel" OnValidSubmit="HandleSubmit">
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" class="form-control" required placeholder="e.g. Lemuel Vincent Alcoseba III" @bind="formModel.Name" />
+            <EditForm Model="formModel" OnValidSubmit="HandleSubmit" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Full Name</label>
+                    <input type="text" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-cit-gold focus:border-cit-gold outline-none transition" required placeholder="e.g. Lemuel Vincent V. Alcoseba III" @bind="formModel.Name" />
                 </div>
 
-                <div class="form-group">
-                    <label>Student ID Number</label>
-                    <input type="text" class="form-control" required placeholder="e.g. 21-1234-567" @bind="formModel.StudentId" />
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Student ID Number</label>
+                    <input type="text" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-cit-gold focus:border-cit-gold outline-none transition" required placeholder="e.g. 21-1234-567" @bind="formModel.StudentId" />
                 </div>
 
-                <div class="form-group">
-                    <label>Department / Office</label>
-                    <select class="form-control" @onchange="OnDepartmentChanged">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Department / Office</label>
+                    <select class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-cit-gold focus:border-cit-gold outline-none bg-white transition" @onchange="OnDepartmentChanged">
                         @foreach (var dept in Departments)
                         {
                             <option value="@dept">@dept</option>
@@ -32,9 +34,9 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Transaction / Purpose</label>
-                    <select class="form-control" @bind="formModel.Service">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Transaction / Purpose</label>
+                    <select class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-cit-gold focus:border-cit-gold outline-none bg-white transition" @bind="formModel.Service">
                         @foreach (var s in AvailableServices)
                         {
                             <option value="@s">@s</option>
@@ -42,43 +44,54 @@
                     </select>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block btn-lg">
+                <button type="submit" class="w-full bg-cit-gold hover:bg-cit-gold-hover text-white py-3.5 rounded-xl font-bold text-base shadow-lg transition-all duration-150 transform hover:-translate-y-0.5 mt-2">
                     Generate Ticket ➔
                 </button>
             </EditForm>
         }
         else
         {
-            <!-- TICKET CONFIRMATION VIEW -->
-            <div class="ticket-receipt">
-                <div class="receipt-cutout"></div>
-                <div class="receipt-header">
-                    <span class="uni-name">CEBU INSTITUTE OF TECHNOLOGY - UNIVERSITY</span>
-                    <h3 class="receipt-title">QueueLess Electronic Pass</h3>
+            <!-- Ticket Receipt -->
+            <div class="border-2 border-dashed border-cit-gold/70 rounded-2xl p-6 sm:p-8 bg-amber-50/40 text-center relative overflow-hidden">
+                <div class="text-[0.65rem] font-bold text-cit-maroon uppercase tracking-wider mb-1">
+                    Cebu Institute of Technology - University
+                </div>
+                <h3 class="text-base font-extrabold text-gray-800 uppercase tracking-wide mb-3">Electronic Queue Pass</h3>
+
+                <div class="text-5xl sm:text-6xl font-black text-cit-maroon tracking-wider my-2">
+                    @generatedTicket.TicketNumber
                 </div>
 
-                <div class="receipt-body">
-                    <div class="receipt-number">@generatedTicket.TicketNumber</div>
-                    <div class="receipt-dept">@generatedTicket.Department</div>
+                <div class="text-sm font-bold text-cit-gold mb-6">
+                    @generatedTicket.Department
+                </div>
 
-                    <div class="receipt-details">
-                        <div><span>Student:</span> <strong>@generatedTicket.StudentName</strong></div>
-                        <div><span>ID No:</span> <strong>@generatedTicket.StudentId</strong></div>
-                        <div><span>Service:</span> <strong>@generatedTicket.Service</strong></div>
-                        <div><span>Time:</span> <strong>@generatedTicket.CreatedAt.ToString("h:mm tt")</strong></div>
+                <div class="bg-white border border-amber-200 rounded-xl p-4 text-left text-xs sm:text-sm divide-y divide-amber-100 shadow-sm mb-6">
+                    <div class="flex justify-between py-2">
+                        <span class="text-gray-500">Student:</span>
+                        <strong class="text-gray-900">@generatedTicket.StudentName</strong>
                     </div>
-
-                    <div class="ahead-badge">
-                        👥 <strong>@(QueueService.Tickets.Count(t => t.Department == generatedTicket.Department && t.Status == TicketStatus.Waiting) - 1)</strong> students ahead of you
+                    <div class="flex justify-between py-2">
+                        <span class="text-gray-500">ID No:</span>
+                        <strong class="text-gray-900">@generatedTicket.StudentId</strong>
+                    </div>
+                    <div class="flex justify-between py-2">
+                        <span class="text-gray-500">Service:</span>
+                        <strong class="text-gray-900">@generatedTicket.Service</strong>
+                    </div>
+                    <div class="flex justify-between py-2">
+                        <span class="text-gray-500">Issued At:</span>
+                        <strong class="text-gray-900">@generatedTicket.CreatedAt.ToString("h:mm tt")</strong>
                     </div>
                 </div>
 
-                <div class="receipt-footer">
-                    <p>Please monitor the Live Dashboard for your number.</p>
-                    <button class="btn btn-outline btn-block" @onclick="() => generatedTicket = null">
-                        + Get Another Ticket
-                    </button>
+                <div class="bg-emerald-50 text-emerald-800 border border-emerald-200 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-medium mb-6">
+                    👥 <strong>@(QueueService.Tickets.Count(t => t.Department == generatedTicket.Department && t.Status == TicketStatus.Waiting) - 1)</strong> students ahead of you
                 </div>
+
+                <button class="w-full bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 py-2.5 rounded-xl text-sm font-semibold transition" @onclick="() => generatedTicket = null">
+                    + Issue Another Ticket
+                </button>
             </div>
         }
     </div>

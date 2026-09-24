@@ -27,3 +27,5 @@ C:\Users\L23Y16W02\Documents\BlazorApp\obj\Debug\net7.0\BlazorApp.pdb
 C:\Users\L23Y16W02\Documents\BlazorApp\obj\Debug\net7.0\BlazorApp.genruntimeconfig.cache
 C:\Users\L23Y16W02\Documents\BlazorApp\obj\Debug\net7.0\ref\BlazorApp.dll
 C:\Users\L23Y16W02\Documents\BlazorApp\obj\Debug\net7.0\BlazorApp.sourcelink.json
+C:\Users\L23Y16W02\Documents\BlazorApp\bin\Debug\net7.0\package-lock.json
+C:\Users\L23Y16W02\Documents\BlazorApp\bin\Debug\net7.0\package.json

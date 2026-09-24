@@ -131,7 +131,7 @@ public class QueueService
             }
             catch
             {
-                // Ignore disconnected circuits
+                // Safely ignore disposed tabs
             }
         }
     }

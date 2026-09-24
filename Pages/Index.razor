@@ -1,26 +1,30 @@
 ﻿@page "/"
 
-<div class="home-hero">
-    <div class="hero-content">
-        <div class="live-pill">
-            <span class="dot">●</span> Real-Time CIT-U System
+<div class="min-h-[calc(100vh-64px)] bg-cit-maroon flex items-center px-6 sm:px-12 md:px-24 text-white relative overflow-hidden">
+    <div class="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-cit-gold/20 blur-3xl pointer-events-none"></div>
+    <div class="absolute right-1/4 bottom-10 w-80 h-80 rounded-full bg-black/20 blur-2xl pointer-events-none"></div>
+
+    <div class="max-w-2xl z-10 py-12">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-white/20 bg-black/25 text-amber-300 text-xs font-bold tracking-wide uppercase mb-6">
+            <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Real-Time CIT-U System
         </div>
 
-        <h1 class="hero-title">
+        <h1 class="text-4xl sm:text-6xl font-black leading-tight tracking-tight mb-5">
             Skip the Line.<br />
-            <span class="accent-gold">Queue Smart.</span>
+            <span class="text-amber-400">Queue Smart.</span>
         </h1>
 
-        <p class="hero-description">
+        <p class="text-base sm:text-lg text-rose-100/90 leading-relaxed mb-8 max-w-xl">
             QueueLess CIT eliminates long waiting times at CIT-U. Get your queue number, track your status in real time, and spend your time where it matters.
         </p>
 
-        <div class="hero-actions">
-            <a href="student" class="btn btn-primary btn-lg">
-                Get Queue Ticket <span class="arrow">→</span>
+        <div class="flex flex-wrap gap-4">
+            <a href="student" class="inline-flex items-center gap-2 bg-cit-gold hover:bg-cit-gold-hover text-white px-6 py-3.5 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
+                Get Queue Ticket <span class="text-lg">→</span>
             </a>
-            <a href="dashboard" class="btn btn-outline btn-lg">
-                View Queue Display <span class="arrow">→</span>
+            <a href="dashboard" class="inline-flex items-center gap-2 bg-white hover:bg-gray-100 text-gray-900 px-6 py-3.5 rounded-xl font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                View Queue Display <span class="text-lg">→</span>
             </a>
         </div>
     </div>
