@@ -1,9 +1,9 @@
 @page "/staff"
 @inject QueueService QueueService
+@inject IJSRuntime JS
 @implements IDisposable
 
 <div class="max-w-7xl mx-auto my-8 px-4 sm:px-6">
-    <!-- Header Controls -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div class="flex items-center gap-3">
             <span class="text-3xl">🎧</span>
@@ -14,16 +14,31 @@
         </div>
 
         <div class="flex items-center gap-3 flex-wrap">
-            <label class="text-xs font-bold uppercase text-gray-500">Filter Department:</label>
-            <select class="px-3 py-1.5 text-sm rounded-lg border border-gray-300 bg-white font-medium focus:ring-2 focus:ring-cit-gold outline-none" @bind="selectedDept">
-                <option value="All">All Departments</option>
-                <option value="Registrar Office">Registrar Office</option>
-                <option value="Finance and Accounting Office">Finance Office</option>
-                <option value="Enrollment Technical Office">Enrollment Technical Office</option>
-            </select>
-            <button class="px-3 py-1.5 text-xs font-bold rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition" @onclick="QueueService.SeedInitialData">
-                ↻ Reset Demo Data
-            </button>
+            <div>
+                <label class="text-[0.7rem] font-bold uppercase text-gray-400 block">My Station:</label>
+                <select class="px-3 py-1.5 text-xs rounded-lg border border-gray-300 bg-white font-bold text-gray-800" @bind="myTeller">
+                    <option value="Teller 1">Teller 1</option>
+                    <option value="Teller 2">Teller 2</option>
+                    <option value="Window 1">Window 1</option>
+                    <option value="Window 2">Window 2</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[0.7rem] font-bold uppercase text-gray-400 block">Department:</label>
+                <select class="px-3 py-1.5 text-xs rounded-lg border border-gray-300 bg-white font-bold text-gray-800" @bind="selectedDept">
+                    <option value="All">All Departments</option>
+                    <option value="Registrar Office">Registrar Office</option>
+                    <option value="Finance and Accounting Office">Finance Office</option>
+                    <option value="Enrollment Technical Office">Enrollment Technical Office</option>
+                </select>
+            </div>
+
+            <div class="pt-4">
+                <button class="px-3 py-1.5 text-xs font-bold rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition" @onclick="QueueService.SeedInitialData">
+                    ↻ Reset Demo Data
+                </button>
+            </div>
         </div>
     </div>
 
@@ -62,9 +77,8 @@
         </div>
     </div>
 
-    <!-- Workspace (2 Columns) -->
+    <!-- Workspace -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- Currently Serving -->
         <div class="lg:col-span-6">
             <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">CURRENTLY SERVING</h4>
 
@@ -73,7 +87,13 @@
                 <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
                     <div class="flex justify-between items-start mb-6">
                         <div>
-                            <h3 class="text-4xl font-black text-cit-maroon tracking-tight">@CurrentServing.TicketNumber</h3>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-4xl font-black text-cit-maroon tracking-tight">@CurrentServing.TicketNumber</h3>
+                                @if (CurrentServing.IsPriority)
+                                {
+                                    <span class="bg-amber-100 text-amber-900 text-xs font-black px-2 py-0.5 rounded-full">⚡ PRIORITY</span>
+                                }
+                            </div>
                             <span class="text-xs font-medium text-gray-500">@CurrentServing.Department</span>
                         </div>
                         <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
@@ -95,16 +115,19 @@
                             <strong class="text-gray-900">@CurrentServing.Service</strong>
                         </div>
                         <div>
-                            <span class="block text-xs text-gray-400">Counter / Teller</span>
-                            <strong class="text-gray-900">@(string.IsNullOrEmpty(CurrentServing.Teller) ? "Counter 1" : CurrentServing.Teller)</strong>
+                            <span class="block text-xs text-gray-400">Assigned Counter</span>
+                            <strong class="text-gray-900 text-cit-gold">@CurrentServing.Teller</strong>
                         </div>
                     </div>
 
-                    <div class="flex gap-3">
+                    <div class="flex gap-2 mb-3">
                         <button class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow transition" @onclick="() => QueueService.CompleteServingTicket(CurrentServing.TicketNumber)">
                             ✔ Mark Complete
                         </button>
-                        <button class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-5 py-3 rounded-xl transition" @onclick="() => QueueService.SkipTicket(CurrentServing.TicketNumber)">
+                        <button class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-3 rounded-xl shadow transition flex items-center gap-1 text-xs" @onclick="() => QueueService.RecallTicket(CurrentServing.TicketNumber)">
+                            📢 Ring Bell
+                        </button>
+                        <button class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-4 py-3 rounded-xl transition text-xs" @onclick="() => QueueService.SkipTicket(CurrentServing.TicketNumber)">
                             ⏭ Skip
                         </button>
                     </div>
@@ -114,20 +137,19 @@
             {
                 <div class="bg-white border border-gray-200 rounded-2xl p-10 text-center shadow-sm">
                     <div class="text-4xl mb-2">☕</div>
-                    <h4 class="text-base font-bold text-gray-800">No Student At Counter</h4>
-                    <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 mb-4">Select a student from the waiting list or call next ticket in line.</p>
+                    <h4 class="text-base font-bold text-gray-800">Station Idle (@myTeller)</h4>
+                    <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1 mb-4">Ready to serve. Call the next student waiting in line.</p>
                     @if (WaitingCount > 0)
                     {
                         var targetDept = selectedDept == "All" ? "Registrar Office" : selectedDept;
-                        <button class="bg-cit-gold hover:bg-cit-gold-hover text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow transition" @onclick='() => QueueService.CallNext(targetDept, "Window 1")'>
-                            📢 Call Next (@targetDept)
+                        <button class="bg-cit-gold hover:bg-cit-gold-hover text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow transition" @onclick='() => QueueService.CallNext(targetDept, myTeller)'>
+                            📢 Call Next Student (@targetDept)
                         </button>
                     }
                 </div>
             }
         </div>
 
-        <!-- Waiting Line -->
         <div class="lg:col-span-6">
             <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center justify-between">
                 <span>UPCOMING IN LINE</span>
@@ -139,16 +161,22 @@
                 {
                     @foreach (var ticket in FilteredWaitingTickets)
                     {
-                        <div class="bg-white border border-gray-200/80 rounded-xl p-4 shadow-sm flex items-center justify-between gap-4">
-                            <div class="min-w-[90px]">
-                                <span class="font-extrabold text-base text-cit-maroon block leading-tight">@ticket.TicketNumber</span>
+                        <div class="bg-white border @(ticket.IsPriority ? "border-amber-400 bg-amber-50/20" : "border-gray-200/80") rounded-xl p-4 shadow-sm flex items-center justify-between gap-4">
+                            <div class="min-w-[100px]">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="font-extrabold text-base text-cit-maroon block">@ticket.TicketNumber</span>
+                                    @if (ticket.IsPriority)
+                                    {
+                                        <span class="text-[0.6rem] bg-amber-400 text-amber-950 font-black px-1.5 py-0.2 rounded">PRIORITY</span>
+                                    }
+                                </div>
                                 <span class="text-xs text-gray-400">@ticket.CreatedAt.ToString("h:mm tt")</span>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <strong class="block text-sm text-gray-800 truncate">@ticket.StudentName</strong>
                                 <span class="block text-xs text-gray-500 truncate">@ticket.Service • @ticket.Department</span>
                             </div>
-                            <button class="px-3.5 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-bold transition whitespace-nowrap" @onclick='() => QueueService.CallNext(ticket.Department, "Counter 1")'>
+                            <button class="px-3.5 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-bold transition whitespace-nowrap" @onclick='() => QueueService.CallNext(ticket.Department, myTeller, ticket.TicketNumber)'>
                                 Call Now
                             </button>
                         </div>
@@ -157,7 +185,7 @@
                 else
                 {
                     <div class="bg-white border border-dashed border-gray-300 rounded-xl p-8 text-center text-xs text-gray-400">
-                        No students currently waiting. New tickets generated at <span class="font-bold text-gray-600">/student</span> will appear here instantly.
+                        No students waiting in this department.
                     </div>
                 }
             </div>
@@ -167,6 +195,7 @@
 
 @code {
     private string selectedDept = "All";
+    private string myTeller = "Teller 2";
     private bool _isDisposed = false;
 
     private IEnumerable<QueueTicket> ActiveTickets =>
@@ -175,7 +204,12 @@
             : QueueService.Tickets.Where(t => t.Department == selectedDept);
 
     private QueueTicket? CurrentServing => ActiveTickets.FirstOrDefault(t => t.Status == TicketStatus.NowServing);
-    private List<QueueTicket> FilteredWaitingTickets => ActiveTickets.Where(t => t.Status == TicketStatus.Waiting).ToList();
+    
+    private List<QueueTicket> FilteredWaitingTickets => ActiveTickets
+        .Where(t => t.Status == TicketStatus.Waiting)
+        .OrderByDescending(t => t.IsPriority)
+        .ThenBy(t => t.CreatedAt)
+        .ToList();
 
     private int WaitingCount => QueueService.Tickets.Count(t => t.Status == TicketStatus.Waiting);
     private int ServingCount => QueueService.Tickets.Count(t => t.Status == TicketStatus.NowServing);
@@ -185,16 +219,20 @@
     protected override void OnInitialized()
     {
         QueueService.OnChange += OnQueueUpdated;
+        QueueService.OnTicketCalled += OnTicketAnnounced;
+    }
+
+    private void OnTicketAnnounced(QueueTicket ticket)
+    {
+        var text = $"Now serving ticket {ticket.TicketNumber}, at {ticket.Teller}.";
+        _ = JS.InvokeVoidAsync("queueAudio.playChimeAndSpeak", text);
     }
 
     private void OnQueueUpdated()
     {
         _ = InvokeAsync(() =>
         {
-            if (!_isDisposed)
-            {
-                StateHasChanged();
-            }
+            if (!_isDisposed) StateHasChanged();
         });
     }
 
@@ -202,5 +240,6 @@
     {
         _isDisposed = true;
         QueueService.OnChange -= OnQueueUpdated;
+        QueueService.OnTicketCalled -= OnTicketAnnounced;
     }
 }

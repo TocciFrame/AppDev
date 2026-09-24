@@ -5,6 +5,7 @@ namespace BlazorApp.Services;
 public class QueueService
 {
     public event Action? OnChange;
+    public event Action<QueueTicket>? OnTicketCalled; // 👈 Audio event trigger
 
     private int _registrarCounter = 16;
     private int _financeCounter = 8;
@@ -32,8 +33,6 @@ public class QueueService
             new QueueTicket { TicketNumber = "FIN-0007", Department = "Finance and Accounting Office", Service = "Refund Request", StudentName = "Carlos Tan", StudentId = "21-3329-874", Teller = "Window 1", CreatedAt = DateTime.Now.AddMinutes(-12), Status = TicketStatus.Waiting },
             new QueueTicket { TicketNumber = "ETO-0004", Department = "Enrollment Technical Office", Service = "Change of Subject", StudentName = "David Sy", StudentId = "23-0192-882", Teller = "Window 2", CreatedAt = DateTime.Now.AddMinutes(-8), Status = TicketStatus.NowServing }
         });
-
-        History.Add(new QueueTicket { TicketNumber = "REG-0012", Department = "Registrar Office", Service = "Honorable Dismissal", StudentName = "Bea Lim", StudentId = "18-3392-100", Teller = "Teller 1", CreatedAt = DateTime.Now.AddMinutes(-40), Status = TicketStatus.Completed });
 
         NotifyStateChanged();
     }
@@ -80,7 +79,6 @@ public class QueueService
             History.Insert(0, ticket);
             Tickets.Remove(ticket);
 
-            // Priority tickets get promoted first
             var nextTicket = Tickets
                 .Where(t => t.Department == ticket.Department && t.Status == TicketStatus.Waiting)
                 .OrderByDescending(t => t.IsPriority)
@@ -91,6 +89,7 @@ public class QueueService
             {
                 nextTicket.Status = TicketStatus.NowServing;
                 nextTicket.Teller = ticket.Teller;
+                OnTicketCalled?.Invoke(nextTicket);
             }
             NotifyStateChanged();
         }
@@ -115,6 +114,7 @@ public class QueueService
             {
                 nextTicket.Status = TicketStatus.NowServing;
                 nextTicket.Teller = ticket.Teller;
+                OnTicketCalled?.Invoke(nextTicket);
             }
             NotifyStateChanged();
         }
@@ -141,7 +141,17 @@ public class QueueService
         {
             nextTicket.Status = TicketStatus.NowServing;
             nextTicket.Teller = tellerName;
+            OnTicketCalled?.Invoke(nextTicket);
             NotifyStateChanged();
+        }
+    }
+
+    public void RecallTicket(string ticketNumber)
+    {
+        var ticket = Tickets.FirstOrDefault(t => t.TicketNumber == ticketNumber && t.Status == TicketStatus.NowServing);
+        if (ticket != null)
+        {
+            OnTicketCalled?.Invoke(ticket);
         }
     }
 
