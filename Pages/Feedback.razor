@@ -1,0 +1,282 @@
+@page "/feedback"
+@page "/feedback/{TicketNumber}"
+@inject QueueService QueueService
+@implements IDisposable
+
+<div class="max-w-6xl mx-auto my-8 px-4 sm:px-6">
+    <!-- Page Header -->
+    <div class="flex items-center gap-3 mb-8">
+        <span class="text-3xl">⭐</span>
+        <div>
+            <h2 class="text-2xl font-black text-gray-900 tracking-tight">Student Experience & Service Feedback</h2>
+            <p class="text-sm text-gray-500">Rate your transaction experience to help us improve campus front-line services.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- LEFT: Rating Submission Form (5 Columns) -->
+        <div class="lg:col-span-5">
+            <div class="bg-white rounded-2xl p-6 sm:p-7 shadow-sm border border-gray-200">
+                @if (showSuccess)
+                {
+                    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl p-6 text-center animate-fade-in">
+                        <span class="text-4xl block mb-2">🎉</span>
+                        <h4 class="font-black text-lg">Thank You for Your Feedback!</h4>
+                        <p class="text-xs text-emerald-700 mt-1 mb-4">Your rating helps CIT-U provide better services to all Wildcats.</p>
+                        <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition" @onclick="ResetForm">
+                            Submit Another Review
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <h3 class="text-base font-extrabold text-gray-900 mb-1">Leave a Review</h3>
+                    <p class="text-xs text-gray-400 mb-6">Tell us how your office visit went today.</p>
+
+                    <EditForm Model="feedbackModel" OnValidSubmit="HandleSubmit" class="space-y-4">
+                        <!-- Department Selection -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Office Visited</label>
+                            <select class="w-full px-3.5 py-2 text-sm rounded-lg border border-gray-300 bg-white font-medium focus:ring-2 focus:ring-cit-gold outline-none" @bind="feedbackModel.Department">
+                                <option value="Registrar Office">Registrar Office</option>
+                                <option value="Finance and Accounting Office">Finance and Accounting Office</option>
+                                <option value="Enrollment Technical Office">Enrollment Technical Office</option>
+                            </select>
+                        </div>
+
+                        <!-- Ticket Reference (Optional) -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Ticket Code (Optional)</label>
+                            <input type="text" class="w-full px-3.5 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-cit-gold outline-none" placeholder="e.g. REG-0014" @bind="feedbackModel.TicketNumber" />
+                        </div>
+
+                        <!-- Star Rating -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Your Rating</label>
+                            <div class="flex items-center gap-1.5">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    var starIndex = i;
+                                    <button type="button" 
+                                            class="text-3xl transition transform hover:scale-110 focus:outline-none @(starIndex <= feedbackModel.Rating ? "text-amber-400" : "text-gray-200")"
+                                            @onclick="() => feedbackModel.Rating = starIndex">
+                                        ★
+                                    </button>
+                                }
+                                <span class="ml-2 text-xs font-bold text-gray-500">
+                                    @GetRatingLabel(feedbackModel.Rating)
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Quick Tags -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Quick Highlights</label>
+                            <div class="flex flex-wrap gap-1.5">
+                                @foreach (var tag in availableTags)
+                                {
+                                    var isSelected = feedbackModel.SelectedTags.Contains(tag);
+                                    <button type="button" 
+                                            class="text-xs px-2.5 py-1 rounded-full border transition font-medium @(isSelected ? "bg-cit-gold text-white border-cit-gold" : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100")"
+                                            @onclick="() => ToggleTag(tag)">
+                                        @(isSelected ? "✓ " : "+ ")@tag
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Comment Box -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Comments & Suggestions</label>
+                            <textarea rows="3" 
+                                      required 
+                                      class="w-full px-3.5 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-cit-gold outline-none resize-none transition" 
+                                      placeholder="Share details of your experience (e.g. queue speed, staff friendliness, clarity)..." 
+                                      @bind="feedbackModel.Comment"></textarea>
+                        </div>
+
+                        <!-- Student Name (Optional / Anonymous) -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Your Name</label>
+                            <input type="text" class="w-full px-3.5 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-cit-gold outline-none" placeholder="Leave empty for Anonymous Wildcat" @bind="feedbackModel.StudentName" />
+                        </div>
+
+                        <button type="submit" class="w-full bg-cit-maroon hover:bg-cit-maroon-dark text-white font-bold py-3 rounded-xl shadow transition duration-150 transform hover:-translate-y-0.5">
+                            Submit Feedback ➔
+                        </button>
+                    </EditForm>
+                }
+            </div>
+        </div>
+
+        <!-- RIGHT: Live Feedback Feed & Satisfaction Metrics (7 Columns) -->
+        <div class="lg:col-span-7 space-y-6">
+            <!-- Satisfaction Score Card -->
+            <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-400 block">Overall Campus Satisfaction</span>
+                    <div class="flex items-baseline gap-2 mt-1">
+                        <span class="text-4xl font-black text-cit-maroon">@AverageRating.ToString("0.0")</span>
+                        <span class="text-amber-400 text-lg">★★★★★</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="text-2xl font-black text-gray-800">@QueueService.FeedbackList.Count</span>
+                    <span class="text-xs text-gray-400 block">Total Reviews</span>
+                </div>
+            </div>
+
+            <!-- Recent Comments Stream -->
+            <div>
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">RECENT STUDENT EXPERIENCES</h4>
+                
+                <div class="space-y-3">
+                    @if (QueueService.FeedbackList.Any())
+                    {
+                        @foreach (var item in QueueService.FeedbackList)
+                        {
+                            <div class="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm space-y-2">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <strong class="text-sm font-bold text-gray-900">@item.StudentName</strong>
+                                            @if (!string.IsNullOrEmpty(item.TicketNumber))
+                                            {
+                                                <span class="text-[0.65rem] bg-gray-100 font-bold px-2 py-0.5 rounded text-gray-600">@item.TicketNumber</span>
+                                            }
+                                        </div>
+                                        <span class="text-xs text-gray-400">@item.Department • @item.SubmittedAt.ToString("MMM d, h:mm tt")</span>
+                                    </div>
+                                    <div class="flex text-amber-400 text-sm">
+                                        @for (int s = 1; s <= 5; s++)
+                                        {
+                                            <span>@(s <= item.Rating ? "★" : "☆")</span>
+                                        }
+                                    </div>
+                                </div>
+
+                                <p class="text-xs sm:text-sm text-gray-700 leading-relaxed">
+                                    "@item.Comment"
+                                </p>
+
+                                @if (item.SelectedTags.Any())
+                                {
+                                    <div class="flex flex-wrap gap-1.5 pt-1">
+                                        @foreach (var tag in item.SelectedTags)
+                                        {
+                                            <span class="text-[0.65rem] font-semibold bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded-full">
+                                                @tag
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="bg-white border border-dashed border-gray-300 rounded-2xl p-8 text-center text-xs text-gray-400">
+                            No feedback submitted yet. Be the first to share your experience!
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? TicketNumber { get; set; }
+
+    private FeedbackItem feedbackModel = new();
+    private bool showSuccess = false;
+    private bool _isDisposed = false;
+
+    private readonly List<string> availableTags = new()
+    {
+        "Fast Service",
+        "Helpful Staff",
+        "Clear Instructions",
+        "Friendly",
+        "Comfortable Waiting",
+        "Needs Faster Queue"
+    };
+
+    private double AverageRating => 
+        QueueService.FeedbackList.Any() ? QueueService.FeedbackList.Average(f => f.Rating) : 5.0;
+
+    protected override void OnInitialized()
+    {
+        QueueService.OnChange += OnQueueChanged;
+
+        if (!string.IsNullOrEmpty(TicketNumber))
+        {
+            feedbackModel.TicketNumber = TicketNumber;
+            var ticket = QueueService.Tickets.FirstOrDefault(t => t.TicketNumber == TicketNumber) 
+                      ?? QueueService.History.FirstOrDefault(t => t.TicketNumber == TicketNumber);
+            if (ticket != null)
+            {
+                feedbackModel.Department = ticket.Department;
+                feedbackModel.StudentName = ticket.StudentName;
+            }
+        }
+    }
+
+    private void ToggleTag(string tag)
+    {
+        if (feedbackModel.SelectedTags.Contains(tag))
+            feedbackModel.SelectedTags.Remove(tag);
+        else
+            feedbackModel.SelectedTags.Add(tag);
+    }
+
+    private void HandleSubmit()
+    {
+        if (string.IsNullOrWhiteSpace(feedbackModel.StudentName))
+        {
+            feedbackModel.StudentName = "Anonymous Wildcat";
+        }
+
+        QueueService.SubmitFeedback(new FeedbackItem
+        {
+            StudentName = feedbackModel.StudentName,
+            Department = feedbackModel.Department,
+            TicketNumber = feedbackModel.TicketNumber,
+            Rating = feedbackModel.Rating,
+            Comment = feedbackModel.Comment,
+            SelectedTags = new List<string>(feedbackModel.SelectedTags),
+            SubmittedAt = DateTime.Now
+        });
+
+        showSuccess = true;
+    }
+
+    private void ResetForm()
+    {
+        feedbackModel = new FeedbackItem();
+        showSuccess = false;
+    }
+
+    private string GetRatingLabel(int rating) => rating switch
+    {
+        5 => "Outstanding! 😍",
+        4 => "Good & Helpful 😊",
+        3 => "Average 😐",
+        2 => "Slow / Disappointing 🙁",
+        _ => "Poor Experience 😡"
+    };
+
+    private void OnQueueChanged()
+    {
+        _ = InvokeAsync(() =>
+        {
+            if (!_isDisposed) StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        _isDisposed = true;
+        QueueService.OnChange -= OnQueueChanged;
+    }
+}

@@ -5,7 +5,7 @@ namespace BlazorApp.Services;
 public class QueueService
 {
     public event Action? OnChange;
-    public event Action<QueueTicket>? OnTicketCalled; // 👈 Audio event trigger
+    public event Action<QueueTicket>? OnTicketCalled;
 
     private int _registrarCounter = 16;
     private int _financeCounter = 8;
@@ -13,6 +13,7 @@ public class QueueService
 
     public List<QueueTicket> Tickets { get; private set; } = new();
     public List<QueueTicket> History { get; private set; } = new();
+    public List<FeedbackItem> FeedbackList { get; private set; } = new();
 
     public QueueService()
     {
@@ -23,7 +24,9 @@ public class QueueService
     {
         Tickets.Clear();
         History.Clear();
+        FeedbackList.Clear();
 
+        // 1. Initial Queue Tickets
         Tickets.AddRange(new[]
         {
             new QueueTicket { TicketNumber = "REG-0013", Department = "Registrar Office", Service = "Clearance Signing", StudentName = "Jake Bajenting", StudentId = "20-1123-456", Teller = "Teller 2", CreatedAt = DateTime.Now.AddMinutes(-15), Status = TicketStatus.NowServing },
@@ -34,9 +37,48 @@ public class QueueService
             new QueueTicket { TicketNumber = "ETO-0004", Department = "Enrollment Technical Office", Service = "Change of Subject", StudentName = "David Sy", StudentId = "23-0192-882", Teller = "Window 2", CreatedAt = DateTime.Now.AddMinutes(-8), Status = TicketStatus.NowServing }
         });
 
+        // 2. Initial Completed History
+        History.Add(new QueueTicket { TicketNumber = "REG-0012", Department = "Registrar Office", Service = "Honorable Dismissal", StudentName = "Bea Lim", StudentId = "18-3392-100", Teller = "Teller 1", CreatedAt = DateTime.Now.AddMinutes(-40), Status = TicketStatus.Completed });
+
+        // 3. Initial Student Reviews
+        FeedbackList.AddRange(new[]
+        {
+            new FeedbackItem 
+            { 
+                StudentName = "Karl Vance", 
+                Department = "Registrar Office", 
+                TicketNumber = "REG-0012", 
+                Rating = 5, 
+                Comment = "Fast processing of my Certificate of Grades. Teller was very polite and helpful!", 
+                SelectedTags = new() { "Fast Service", "Helpful Staff" }, 
+                SubmittedAt = DateTime.Now.AddMinutes(-40) 
+            },
+            new FeedbackItem 
+            { 
+                StudentName = "Bea Lim", 
+                Department = "Finance and Accounting Office", 
+                TicketNumber = "FIN-0005", 
+                Rating = 4, 
+                Comment = "Very clear explanation regarding the promissory note steps.", 
+                SelectedTags = new() { "Clear Instructions" }, 
+                SubmittedAt = DateTime.Now.AddHours(-1) 
+            },
+            new FeedbackItem 
+            { 
+                StudentName = "Anonymous Wildcat", 
+                Department = "Enrollment Technical Office", 
+                TicketNumber = "ETO-0003", 
+                Rating = 5, 
+                Comment = "QueueLess made schedule adjustments super easy. Didn't have to wait under the sun.", 
+                SelectedTags = new() { "Fast Service", "Friendly" }, 
+                SubmittedAt = DateTime.Now.AddHours(-3) 
+            }
+        });
+
         NotifyStateChanged();
     }
 
+    // ---------------- STUDENT TICKET CREATION ----------------
     public QueueTicket CreateTicket(string department, string service, string studentName, string studentId, bool isPriority = false)
     {
         string prefix = department switch
@@ -70,6 +112,7 @@ public class QueueService
         return ticket;
     }
 
+    // ---------------- STAFF ACTIONS ----------------
     public void CompleteServingTicket(string ticketNumber)
     {
         var ticket = Tickets.FirstOrDefault(t => t.TicketNumber == ticketNumber);
@@ -79,6 +122,7 @@ public class QueueService
             History.Insert(0, ticket);
             Tickets.Remove(ticket);
 
+            // Priority tickets get promoted first
             var nextTicket = Tickets
                 .Where(t => t.Department == ticket.Department && t.Status == TicketStatus.Waiting)
                 .OrderByDescending(t => t.IsPriority)
@@ -155,6 +199,14 @@ public class QueueService
         }
     }
 
+    // ---------------- FEEDBACK & RATINGS ----------------
+    public void SubmitFeedback(FeedbackItem feedback)
+    {
+        FeedbackList.Insert(0, feedback);
+        NotifyStateChanged();
+    }
+
+    // ---------------- NOTIFICATIONS ----------------
     private void NotifyStateChanged()
     {
         if (OnChange == null) return;

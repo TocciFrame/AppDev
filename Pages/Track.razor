@@ -1,5 +1,6 @@
 @page "/track/{TicketNumber}"
 @inject QueueService QueueService
+@inject NavigationManager Nav
 @implements IDisposable
 
 <div class="max-w-md mx-auto my-8 px-4">
@@ -7,44 +8,67 @@
     {
         @if (ticket.Status == TicketStatus.NowServing)
         {
-            <div class="bg-emerald-50 border-2 border-emerald-500 rounded-3xl p-8 text-center shadow-2xl animate-pulse">
+            <!-- ACTIVE / NOW SERVING STATE -->
+            <div class="bg-emerald-50 border-2 border-emerald-500 rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden animate-pulse">
                 <span class="inline-block bg-emerald-600 text-white font-black text-xs uppercase px-4 py-1 rounded-full mb-3 tracking-widest">
                     🔔 IT'S YOUR TURN NOW!
                 </span>
-                <h2 class="text-6xl font-black text-emerald-700 tracking-tight my-2">@ticket.TicketNumber</h2>
-                <p class="text-sm font-bold text-gray-700 mb-6">@ticket.Department</p>
+                
+                <h2 class="text-6xl font-black text-emerald-700 tracking-tight my-2">
+                    @ticket.TicketNumber
+                </h2>
+                
+                <p class="text-sm font-bold text-gray-700 mb-6">
+                    @ticket.Department
+                </p>
 
                 <div class="bg-white rounded-2xl p-6 shadow-inner border border-emerald-200 mb-6">
-                    <span class="block text-xs uppercase font-bold text-gray-400 mb-1">PROCEED IMMEDIATELY TO</span>
-                    <strong class="text-3xl font-black text-gray-900 block text-emerald-600">
+                    <span class="block text-xs uppercase font-bold text-gray-400 mb-1 tracking-wider">
+                        PROCEED IMMEDIATELY TO
+                    </span>
+                    <strong class="text-3xl font-black text-emerald-600 block">
                         @(string.IsNullOrEmpty(ticket.Teller) ? "Counter 1" : ticket.Teller)
                     </strong>
                 </div>
 
-                <div class="text-xs text-gray-600">
-                    Serving: <strong>@ticket.StudentName</strong><br />
-                    Transaction: @ticket.Service
+                <div class="text-xs text-gray-600 font-medium space-y-1">
+                    <div>Student: <strong>@ticket.StudentName</strong></div>
+                    <div>Transaction: <strong>@ticket.Service</strong></div>
                 </div>
             </div>
         }
         else if (ticket.Status == TicketStatus.Waiting)
         {
+            <!-- WAITING IN LINE STATE -->
             <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-gray-100 text-center">
                 <div class="flex justify-between items-center mb-4">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Queue Tracking</span>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Live Tracker</span>
                     @if (ticket.IsPriority)
                     {
-                        <span class="bg-amber-100 text-amber-900 text-xs font-black px-2.5 py-0.5 rounded-full">⚡ PRIORITY</span>
+                        <span class="bg-amber-100 text-amber-900 text-xs font-black px-2.5 py-0.5 rounded-full">
+                            ⚡ PRIORITY
+                        </span>
                     }
                 </div>
 
-                <h2 class="text-5xl font-black text-cit-maroon tracking-wider my-1">@ticket.TicketNumber</h2>
-                <span class="text-sm font-bold text-cit-gold block mb-6">@ticket.Department</span>
+                <h2 class="text-5xl font-black text-cit-maroon tracking-wider my-1">
+                    @ticket.TicketNumber
+                </h2>
+                <span class="text-sm font-bold text-cit-gold block mb-6">
+                    @ticket.Department
+                </span>
 
+                <!-- Position & Estimated Wait Card -->
                 <div class="bg-amber-50/60 border border-amber-200 rounded-2xl p-6 mb-6">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">AHEAD OF YOU</span>
-                    <div class="text-5xl font-black text-gray-900 my-1">@AheadCount</div>
-                    <span class="text-xs text-gray-500 font-medium">students in line before your turn</span>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">
+                        AHEAD OF YOU
+                    </span>
+                    <div class="text-5xl font-black text-gray-900 my-1">
+                        @AheadCount
+                    </div>
+                    <span class="text-xs text-gray-500 font-medium">
+                        students in line before your turn
+                    </span>
 
                     <div class="mt-4 pt-4 border-t border-amber-200/60 flex justify-between text-xs font-semibold text-gray-600">
                         <span>Estimated Wait:</span>
@@ -52,33 +76,67 @@
                     </div>
                 </div>
 
+                <!-- Ticket Details -->
                 <div class="bg-gray-50 rounded-xl p-4 text-left text-xs space-y-2 mb-6 text-gray-600">
-                    <div class="flex justify-between"><span>Student:</span> <strong class="text-gray-900">@ticket.StudentName</strong></div>
-                    <div class="flex justify-between"><span>Service:</span> <strong class="text-gray-900">@ticket.Service</strong></div>
-                    <div class="flex justify-between"><span>Queue Time:</span> <strong class="text-gray-900">@ticket.CreatedAt.ToString("h:mm tt")</strong></div>
+                    <div class="flex justify-between">
+                        <span>Student:</span>
+                        <strong class="text-gray-900">@ticket.StudentName</strong>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Service:</span>
+                        <strong class="text-gray-900">@ticket.Service</strong>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Queue Time:</span>
+                        <strong class="text-gray-900">@ticket.CreatedAt.ToString("h:mm tt")</strong>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Lane Type:</span>
+                        <strong class="@(ticket.IsPriority ? "text-amber-600 font-bold" : "text-gray-900")">
+                            @(ticket.IsPriority ? "⚡ Priority Lane" : "Regular Lane")
+                        </strong>
+                    </div>
                 </div>
 
-                <p class="text-xs text-gray-400">Feel free to grab food or study. This page updates live!</p>
+                <p class="text-xs text-gray-400">
+                    Feel free to grab coffee or study. This page updates in real-time when your ticket is called!
+                </p>
             </div>
         }
         else
         {
+            <!-- COMPLETED / FINISHED STATE -->
             <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-200 text-center">
                 <div class="text-5xl mb-3">✔</div>
-                <h3 class="text-2xl font-black text-gray-900 mb-1">Ticket @ticket.Status</h3>
-                <p class="text-xs text-gray-500 mb-6">Your transaction has finished.</p>
-                <a href="student" class="inline-block bg-cit-gold text-white text-xs font-bold px-6 py-3 rounded-xl shadow">
-                    Get a New Ticket
-                </a>
+                <h3 class="text-2xl font-black text-gray-900 mb-1">Transaction @ticket.Status</h3>
+                <p class="text-xs text-gray-500 mb-6">
+                    Ticket <strong>@ticket.TicketNumber</strong> has concluded. Thank you for using QueueLess CIT-U!
+                </p>
+
+                <!-- Actions: Rate Experience or Get New Ticket -->
+                <div class="flex flex-col gap-2">
+                    <a href="feedback/@ticket.TicketNumber" class="w-full inline-block bg-cit-maroon hover:bg-cit-maroon-dark text-white text-xs font-bold py-3 rounded-xl shadow transition">
+                        ⭐ Rate Your Service Experience
+                    </a>
+                    <a href="student" class="w-full inline-block bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 text-xs font-semibold py-2.5 rounded-xl transition">
+                        Get a New Ticket
+                    </a>
+                </div>
             </div>
         }
     }
     else
     {
-        <div class="bg-white rounded-2xl p-8 shadow text-center border">
-            <h3 class="font-bold text-gray-800">Ticket Not Found</h3>
-            <p class="text-xs text-gray-500 mt-1 mb-4">No active ticket matches "@TicketNumber".</p>
-            <a href="student" class="text-cit-maroon font-bold text-xs underline">Back to Student Kiosk</a>
+        <!-- NOT FOUND STATE -->
+        <div class="bg-white rounded-2xl p-8 shadow text-center border border-gray-200">
+            <span class="text-4xl block mb-2">🔍</span>
+            <h3 class="font-bold text-gray-800 text-lg">Ticket Not Found</h3>
+            <p class="text-xs text-gray-500 mt-1 mb-6">
+                No active or recent ticket matches <span class="font-bold text-cit-maroon">"@TicketNumber"</span>.
+            </p>
+            <a href="student" class="inline-block bg-cit-gold hover:bg-cit-gold-hover text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow transition">
+                Back to Student Kiosk
+            </a>
         </div>
     }
 </div>
@@ -108,7 +166,10 @@
     {
         _ = InvokeAsync(() =>
         {
-            if (!_isDisposed) StateHasChanged();
+            if (!_isDisposed)
+            {
+                StateHasChanged();
+            }
         });
     }
 
